@@ -510,6 +510,39 @@ extension Scan on FlutterBluePlus {
 
     return controller.stream;
   }
+
+  static Future<List<ScanResult>> startScanWithResult({
+    List<Guid> withServices = const [],
+    Duration? timeout,
+    bool androidUsesFineLocation = false,
+  }) async {
+    if (FlutterBluePlus.isScanningNow) {
+      throw Exception("Another scan is already in progress");
+    }
+
+    List<ScanResult> output = [];
+
+    var subscription = FlutterBluePlus.scanResults.listen((result) {
+      output = result;
+    }, onError: (e, stackTrace) {
+      throw Exception(e);
+    });
+
+    FlutterBluePlus.startScan(
+      withServices: withServices,
+      timeout: timeout,
+      removeIfGone: null,
+      oneByOne: false,
+      androidUsesFineLocation: androidUsesFineLocation,
+    );
+
+    // wait scan complete
+    await FlutterBluePlus.isScanning.where((e) => e == false).first;
+
+    subscription.cancel();
+
+    return output;
+  }
 }
 
 /// Log levels for FlutterBlue
