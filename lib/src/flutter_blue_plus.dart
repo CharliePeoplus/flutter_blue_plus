@@ -465,15 +465,15 @@ class FlutterBluePlus {
   @Deprecated('Use isSupported instead')
   static Future<bool> get isAvailable async => await isSupported;
 
-  @Deprecated('removed. read MIGRATION.md for simple alternatives')
-  static Stream<ScanResult> scan(
-          {ScanMode scanMode = ScanMode.lowLatency,
-          List<Guid> withServices = const [],
-          List<String> macAddresses = const [],
-          Duration? timeout,
-          bool allowDuplicates = false,
-          bool androidUsesFineLocation = false}) =>
-      throw Exception;
+  // @Deprecated('removed. read MIGRATION.md for simple alternatives')
+  // static Stream<ScanResult> scan(
+  //         {ScanMode scanMode = ScanMode.lowLatency,
+  //         List<Guid> withServices = const [],
+  //         List<String> macAddresses = const [],
+  //         Duration? timeout,
+  //         bool allowDuplicates = false,
+  //         bool androidUsesFineLocation = false}) =>
+  //     throw Exception;
 }
 
 extension Scan on FlutterBluePlus {
