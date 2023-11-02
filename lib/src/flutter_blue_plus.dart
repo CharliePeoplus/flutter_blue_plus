@@ -476,6 +476,42 @@ class FlutterBluePlus {
       throw Exception;
 }
 
+extension Scan on FlutterBluePlus {
+  static Stream<ScanResult> scan({
+    List<Guid> withServices = const [],
+    Duration? timeout,
+    bool androidUsesFineLocation = false,
+  }) {
+    if (FlutterBluePlus.isScanningNow) {
+        throw Exception("Another scan is already in progress");
+    }
+
+    final controller = StreamController<ScanResult>();
+
+    var subscription = FlutterBluePlus.scanResults.listen(
+      (r) => controller.add(r.first),
+      onError: (e, stackTrace) => controller.addError(e, stackTrace),
+    );
+
+    FlutterBluePlus.startScan(
+      withServices: withServices,
+      timeout: timeout,
+      removeIfGone: null,
+      oneByOne: true,
+      androidUsesFineLocation: androidUsesFineLocation,
+    );
+
+    Future scanComplete = FlutterBluePlus.isScanning.where((e) => e == false).first;
+
+    scanComplete.whenComplete(() {
+      subscription.cancel();
+      controller.close();
+    });
+
+    return controller.stream;
+  }
+}
+
 /// Log levels for FlutterBlue
 enum LogLevel {
   none, //0
