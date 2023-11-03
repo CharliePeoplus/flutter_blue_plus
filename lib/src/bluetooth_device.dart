@@ -66,6 +66,27 @@ class BluetoothDevice {
     _Mutex opMutex = await _MutexFactory.getMutexForKey(key);
     await opMutex.take();
 
+    //     var request = protos.ConnectRequest.create()
+    //   ..remoteId = id.toString()
+    //   ..androidAutoConnect = autoConnect;
+
+    // await FlutterBluePlus.instance._channel
+    //     .invokeMethod('connect', request.writeToBuffer());
+
+    // // if (timeout == null) {
+    // //   await connectionState.firstWhere((s) => s == BluetoothConnectionState.connected);
+    // // } else {
+    //   await connectionState
+    //       .firstWhere((s) => s == BluetoothConnectionState.connected)
+    //       .timeout(
+    //     timeout,
+    //     onTimeout: () {
+    //       disconnect();
+    //       throw TimeoutException('Failed to connect in time.', timeout);
+    //     },
+    //   );
+    // // }
+
     try {
       var request = BmConnectRequest(
         remoteId: remoteId.str,
@@ -435,32 +456,35 @@ class BluetoothDevice {
     await opMutex.take();
 
     try {
-      var responseStream = FlutterBluePlus._methodStream.stream
-          .where((m) => m.method == "OnBondStateChanged")
-          .map((m) => m.arguments)
-          .map((args) => BmBondStateResponse.fromMap(args))
-          .where((p) => p.remoteId == remoteId.str)
-          .where((p) => p.bondState != BmBondStateEnum.bonding);
+      if (Platform.isAndroid) {
+        FlutterBluePlus._invokeMethod('createBond', remoteId.str);
+      }
+      // var responseStream = FlutterBluePlus._methodStream.stream
+      //     .where((m) => m.method == "OnBondStateChanged")
+      //     .map((m) => m.arguments)
+      //     .map((args) => BmBondStateResponse.fromMap(args))
+      //     .where((p) => p.remoteId == remoteId.str)
+      //     .where((p) => p.bondState != BmBondStateEnum.bonding);
 
-      // Start listening now, before invokeMethod, to ensure we don't miss the response
-      Future<BmBondStateResponse> futureResponse = responseStream.first;
+      // // Start listening now, before invokeMethod, to ensure we don't miss the response
+      // Future<BmBondStateResponse> futureResponse = responseStream.first;
 
-      // invoke
-      bool changed = await FlutterBluePlus._invokeMethod('createBond', remoteId.str);
+      // // invoke
+      // bool changed = await FlutterBluePlus._invokeMethod('createBond', remoteId.str);
 
       // only wait for 'bonded' if we weren't already bonded
-      if (changed) {
-        BmBondStateResponse bs = await futureResponse
-            .fbpEnsureAdapterIsOn("createBond")
-            .fbpEnsureDeviceIsConnected(this, "createBond")
-            .fbpTimeout(timeout, "createBond");
+      // if (changed) {
+      //   BmBondStateResponse bs = await futureResponse
+      //       .fbpEnsureAdapterIsOn("createBond")
+      //       .fbpEnsureDeviceIsConnected(this, "createBond")
+      //       .fbpTimeout(timeout, "createBond");
 
-        // success?
-        if (bs.bondState != BmBondStateEnum.bonded) {
-          throw FlutterBluePlusException(ErrorPlatform.dart, "createBond", FbpErrorCode.createBondFailed.hashCode,
-              "Failed to create bond. ${bs.bondState}");
-        }
-      }
+      //   // success?
+      //   if (bs.bondState != BmBondStateEnum.bonded) {
+      //     throw FlutterBluePlusException(ErrorPlatform.dart, "createBond", FbpErrorCode.createBondFailed.hashCode,
+      //         "Failed to create bond. ${bs.bondState}");
+      //   }
+      // }
     } finally {
       opMutex.give();
     }

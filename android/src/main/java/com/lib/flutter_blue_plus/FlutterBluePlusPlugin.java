@@ -1123,32 +1123,38 @@ public class FlutterBluePlusPlugin implements
 
                 case "createBond":
                 {
-                    String remoteId = (String) call.arguments;
-
-                    // check connection
-                    BluetoothGatt gatt = mConnectedDevices.get(remoteId);
-                    if(gatt == null) {
-                        result.error("createBond", "device is disconnected", null);
-                        break;
-                    }
-
-                    BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(remoteId);
-
-                    // already bonded?
-                    if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                        log(LogLevel.WARNING, "already bonded");
-                        result.success(false); // no work to do
-                        break;
-                    }
-
-                    // bond
-                    if(device.createBond() == false) {
-                        result.error("createBond", "device.createBond() returned false", null);
-                        break;
-                    }
-
-                    result.success(true);
+                    String deviceId = (String)call.arguments;
+                    BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(deviceId);
+                    device.createBond();
+                    result.success(null);
                     break;
+
+                    // String remoteId = (String) call.arguments;
+
+                    // // check connection
+                    // BluetoothGatt gatt = mConnectedDevices.get(remoteId);
+                    // if(gatt == null) {
+                    //     result.error("createBond", "device is disconnected", null);
+                    //     break;
+                    // }
+
+                    // BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(remoteId);
+
+                    // // already bonded?
+                    // if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
+                    //     log(LogLevel.WARNING, "already bonded");
+                    //     result.success(false); // no work to do
+                    //     break;
+                    // }
+
+                    // // bond
+                    // if(device.createBond() == false) {
+                    //     result.error("createBond", "device.createBond() returned false", null);
+                    //     break;
+                    // }
+
+                    // result.success(true);
+                    // break;
                 }
 
                 case "removeBond":
